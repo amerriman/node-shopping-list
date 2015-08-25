@@ -70,13 +70,11 @@ router.post("/items", function(req, res){
 });
 
 router.put("/item/:id", function(req, res, next){
-
   //This sees if the item exists
   var listItem = storage.items.filter(function(item){
     //this will return the object you are looking for in a new little array.  It's ONLY to see if it's there or not and is connected to the else below
     return item.id===parseInt(req.params.id);
   });
-
   //if the item exists,
   if(listItem.length>0){
     //loop through the storage items to find the item with that id
