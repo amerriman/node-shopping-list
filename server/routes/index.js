@@ -15,12 +15,6 @@ ItemLibrary.prototype.addItem = function(name) {
 };
 
 // create some instances
-//Instructions say to do below, but doesn't work
-// var storage = new ItemLibrary();
-// storage.add('Noodles');
-// storage.add('Tomatoes');
-// storage.add('Peppers');
-
 var storage = new ItemLibrary();
 storage.addItem('Noodles');
 storage.addItem('Tomatoes');
@@ -36,6 +30,12 @@ router.get('/items', function(req, res) {
   res.json(storage.items);
 });
 
+router.get('/item/:id', function(req, res){
+  res.json(storage.items[req.params.id]);
+});
+
+
+//http -f POST localhost:3000/items name="sausage"
 router.post("/items", function(req, res){
   var listItem = storage.items.filter(function(item){
     //what is happening here? - body works, params does not
@@ -69,6 +69,7 @@ router.post("/items", function(req, res){
   // }
 });
 
+//http PUT localhost:3000/item/0 name="blueberries"
 router.put("/item/:id", function(req, res, next){
   //This sees if the item exists
   var listItem = storage.items.filter(function(item){
@@ -86,13 +87,14 @@ router.put("/item/:id", function(req, res, next){
           if(key === "name") {
             //change the name to the one we specified in the request
             storage.items[i].name = req.body.name;
-          } else if (key === "id") {
-            storage.items[i].id = req.body.id;
           }
+          // else if (key === "id") {
+          //   //this is problematic - you can end up with two ids of the same number (and then you can't delete the one you changed for some reason)- need a whole other thing here to make sure the id isn't the same as an existing id?
+          //   storage.items[i].id = req.body.id;
+          // }
         }
       }
     }
-    //puppies example has send - why send and not json? They seem to be the same? It's json in the else, but they both seem to work either way
     res.json(storage.items);
   } else {
 
@@ -147,6 +149,7 @@ router.put("/item/:id", function(req, res, next){
 
 // });
 
+//http DELETE localhost:3000/item/2
 router.delete('/item/:id', function(req, res, next){
   var listItem = storage.items.filter(function(item){
     return item.id===parseInt(req.params.id);
@@ -170,6 +173,81 @@ router.delete('/item/:id', function(req, res, next){
 });
 
 module.exports = router;
+
+///////////////////////////////////////////////
+
+// //Or, everything below does pretty much the same thing but WAY simpler to write?  Still need validation for much of this
+
+// var express = require('express');
+// var router = express.Router();
+
+// router.get('/items', function(req, res, next) {
+//   res.json(storage.items);
+// });
+
+// router.post('/items', function(req, res) {
+//   storage.addItem(req.body.name);
+//   res.json(storage.items);
+// });
+
+// router.put('/item/:id', function(req, res, next) {
+//   console.log(storage.items[req.params.id]);
+//   if(storage.items[req.params.id]){
+//     storage.items[req.params.id].name = req.body.name;
+//     res.json(storage.items);
+//   }
+//   else {
+//     storage.addItem(req.body.name);
+//     res.json(storage.items);
+//   }
+// });
+
+// router.delete('/item/:id', function(req, res, next) {
+//   console.log(storage.items[req.params.id]);
+//   if(storage.items[req.params.id]){
+//     storage.items.splice([req.params.id],1);
+//     res.json(storage.items);
+//   }else {
+//     res.json(storage.items);
+//   }
+// });
+
+// // router.get('/item/:id', function(req, res, next) {
+// //   console.log(storage.items);
+// //   console.log(storage.items[req.params.id]);
+// //   storage.items[req.params.id - 1].name;
+// //   storage.items[req.params.id - 1].age ;
+
+// //   res.json(this.items[req.params.id - 1]);
+// // });
+
+
+// // constructor
+// function ItemLibrary() {
+//   this.items = [];
+//   this.id = 0;
+// }
+
+// // methods
+// ItemLibrary.prototype.addItem = function(name) {
+//   var newItem = {name: name, id: this.id};
+//   this.items.push(newItem);
+//   this.id += 1;
+// };
+
+// // create some instances
+// var storage = new ItemLibrary();
+// storage.addItem('Noodles');
+// storage.addItem('Tomatoes');
+// storage.addItem('Peppers');
+
+// // route handler
+// router.get('/items', function(req, res) {
+//   res.json(storage.items);
+// });
+
+
+// module.exports = router;
 
 
 
