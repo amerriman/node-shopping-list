@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+var logic = require('../utilities/logic');
 
 // constructor
 function ItemLibrary() {
@@ -82,6 +83,7 @@ router.put("/item/:id", function(req, res, next){
     for (var i = 0; i < storage.items.length; i++) {
       if(storage.items[i].id === parseInt(req.params.id)){
         //look for the key we've specified in our request
+        //reafactor as a true filter; DO NOT use for/in to iterate through an array
         for(var key in req.body){
           //if the key is 'name'
           if(key === "name") {
@@ -151,26 +153,30 @@ router.put("/item/:id", function(req, res, next){
 
 //http DELETE localhost:3000/item/2
 router.delete('/item/:id', function(req, res, next){
-  var listItem = storage.items.filter(function(item){
-    return item.id===parseInt(req.params.id);
-  });
-
-  if(listItem.length>0){
-    for (var i = 0; i < storage.items.length; i++) {
-      if(storage.items[i].id === parseInt(req.params.id)){
-
-        var tempItem = storage.items.splice(i, 1);
-        res.json({
-          message: 'That item is off the list!',
-          removedItem: tempItem,
-          itemlist: storage.items
-        });
-      }
-    }
-  } else {
-    res.json("That item doesn't exist");
-  }
+  var response = logic.handleDelete(req.params.id, storage.items);
+  res.json(response);
 });
+
+// router.delete('/item/:id', function(req, res, next){
+//   var listItem = storage.items.filter(function(item){
+//     return item.id===parseInt(req.params.id);
+//   });
+//   if(listItem.length>0){
+//     for (var i = 0; i < storage.items.length; i++) {
+//       if(storage.items[i].id === parseInt(req.params.id)){
+
+//         var tempItem = storage.items.splice(i, 1);
+//         res.json({
+//           message: 'That item is off the list!',
+//           removedItem: tempItem,
+//           itemlist: storage.items
+//         });
+//       }
+//     }
+//   } else {
+//     res.json("That item doesn't exist");
+//   }
+// });
 
 module.exports = router;
 
