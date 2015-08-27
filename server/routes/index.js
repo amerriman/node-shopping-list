@@ -1,22 +1,10 @@
 var express = require('express');
 var router = express.Router();
 var logic = require('../utilities/logic');
+var storage = require('../models/items');
 
-// constructor
-function ItemLibrary() {
-  this.items = [];
-  this.id = 0;
-}
-
-// methods
-ItemLibrary.prototype.addItem = function(name) {
-  var newItem = {name: name, id: this.id};
-  this.items.push(newItem);
-  this.id += 1;
-};
 
 // create some instances
-var storage = new ItemLibrary();
 storage.addItem('Noodles');
 storage.addItem('Tomatoes');
 storage.addItem('Peppers');
@@ -38,78 +26,92 @@ router.get('/item/:id', function(req, res){
 
 //http -f POST localhost:3000/items name="sausage"
 router.post("/items", function(req, res){
-  var listItem = storage.items.filter(function(item){
-    //what is happening here? - body works, params does not
-    return item.name.toLowerCase()===req.body.name.toLowerCase();
-  });
-
-  if(listItem.length>0){
-    res.json(
-      {message: "NOOOOOO!!!"}
-    );
-  } else {
-    var newItem = storage.addItem(req.body.name);
-      res.json({
-        message: "Woot!",
-        itemList: storage.items
-      });
-    }
-//Keep working on this - can it work with a for loop?
-  // for (var i = 0; i < storage.items.length; i++) {
-  //   if(storage.items[i].name === req.params.name){
-  //     res.json(
-  //       {message: "You already have that on the list!"}
-  //     );
-  //   } else {
-  //     var newItem = storage.addItem(req.body.name);
-  //     res.json({
-  //       message: "Woot!",
-  //       itemList: storage.items
-  //     });
-  //   }
-  // }
+  var response = logic.handlePost(req.body.name, storage);
+  res.json(response);
 });
 
-//http PUT localhost:3000/item/0 name="blueberries"
+
+/////////////   THE LONG WAY  ////////////////////
+// //http -f POST localhost:3000/items name="sausage"
+// router.post("/items", function(req, res){
+//   var listItem = storage.items.filter(function(item){
+//     //what is happening here? - body works, params does not
+//     return item.name.toLowerCase()===req.body.name.toLowerCase();
+//   });
+
+//   if(listItem.length>0){
+//     res.json(
+//       {message: "NOOOOOO!!!"}
+//     );
+//   } else {
+//     var newItem = storage.addItem(req.body.name);
+//       res.json({
+//         message: "Woot!",
+//         itemList: storage.items
+//       });
+//     }
+// //Keep working on this - can it work with a for loop?
+//   // for (var i = 0; i < storage.items.length; i++) {
+//   //   if(storage.items[i].name === req.params.name){
+//   //     res.json(
+//   //       {message: "You already have that on the list!"}
+//   //     );
+//   //   } else {
+//   //     var newItem = storage.addItem(req.body.name);
+//   //     res.json({
+//   //       message: "Woot!",
+//   //       itemList: storage.items
+//   //     });
+//   //   }
+//   // }
+// });
+
 router.put("/item/:id", function(req, res, next){
-  //This sees if the item exists
-  var listItem = storage.items.filter(function(item){
-    //this will return the object you are looking for in a new little array.  It's ONLY to see if it's there or not and is connected to the else below
-    return item.id===parseInt(req.params.id);
-  });
-  //if the item exists,
-  if(listItem.length>0){
-    //loop through the storage items to find the item with that id
-    for (var i = 0; i < storage.items.length; i++) {
-      if(storage.items[i].id === parseInt(req.params.id)){
-        //look for the key we've specified in our request
-        //reafactor as a true filter; DO NOT use for/in to iterate through an array
-        for(var key in req.body){
-          //if the key is 'name'
-          if(key === "name") {
-            //change the name to the one we specified in the request
-            storage.items[i].name = req.body.name;
-          }
-          // else if (key === "id") {
-          //   //this is problematic - you can end up with two ids of the same number (and then you can't delete the one you changed for some reason)- need a whole other thing here to make sure the id isn't the same as an existing id?
-          //   storage.items[i].id = req.body.id;
-          // }
-        }
-      }
-    }
-    res.json(storage.items);
-  } else {
-
-    var newItem = storage.addItem(req.body.name);
-      res.json({
-        message: "Woot!",
-        itemList: storage.items
-      });
-    }
-
+  var results = logic.handlePut(req.params.id, req.body, storage);
+  res.json(results);
 });
 
+//////  THE LONG WAY ///////////////////////////
+// //http PUT localhost:3000/item/0 name="blueberries"
+// router.put("/item/:id", function(req, res, next){
+//   //This sees if the item exists
+//   var listItem = storage.items.filter(function(item){
+//     //this will return the object you are looking for in a new little array.  It's ONLY to see if it's there or not and is connected to the else below
+//     return item.id===parseInt(req.params.id);
+//   });
+//   //if the item exists,
+//   if(listItem.length>0){
+//     //loop through the storage items to find the item with that id
+//     for (var i = 0; i < storage.items.length; i++) {
+//       if(storage.items[i].id === parseInt(req.params.id)){
+//         //look for the key we've specified in our request
+//         //reafactor as a true filter; DO NOT use for/in to iterate through an array
+//         for(var key in req.body){
+//           //if the key is 'name'
+//           if(key === "name") {
+//             //change the name to the one we specified in the request
+//             storage.items[i].name = req.body.name;
+//           }
+//           // else if (key === "id") {
+//           //   //this is problematic - you can end up with two ids of the same number (and then you can't delete the one you changed for some reason)- need a whole other thing here to make sure the id isn't the same as an existing id?
+//           //   storage.items[i].id = req.body.id;
+//           // }
+//         }
+//       }
+//     }
+//     res.json(storage.items);
+//   } else {
 
+//     var newItem = storage.addItem(req.body.name);
+//       res.json({
+//         message: "Woot!",
+//         itemList: storage.items
+//       });
+//     }
+
+// });
+
+//// double validation attempt.  Come back to this. ////
 // router.put("/item/:id", function(req, res, next){
 //   var listItem = storage.items.filter(function(item){
 //     return item.id===parseInt(req.params.id);
@@ -157,6 +159,7 @@ router.delete('/item/:id', function(req, res, next){
   res.json(response);
 });
 
+///////////  THE LONG WAY  //////////////////////////
 // router.delete('/item/:id', function(req, res, next){
 //   var listItem = storage.items.filter(function(item){
 //     return item.id===parseInt(req.params.id);
